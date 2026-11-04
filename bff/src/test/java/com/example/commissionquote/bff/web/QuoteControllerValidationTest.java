@@ -37,7 +37,7 @@ class QuoteControllerValidationTest {
 
     @Test
     void validRequestReturnsTheServiceQuote() throws Exception {
-        given(quoteService.createQuote(any(), any(), any()))
+        given(quoteService.createQuote(any(), any(), any(), any()))
                 .willReturn(new Quote("q-1", new BigDecimal("0.0075"), new BigDecimal("3750.00")));
 
         var result = post(VALID_BODY).exchange();
@@ -75,6 +75,15 @@ class QuoteControllerValidationTest {
     void malformedJsonReturns400() {
         assertThat(post("{\"loanAmount\": 500000,")).hasStatus(400)
                 .bodyJson().extractingPath("$.detail").isEqualTo("Request body is not valid JSON");
+    }
+
+    @Test
+    void invalidIdempotencyKeyReturns400() {
+        var result = post(VALID_BODY).header("Idempotency-Key", "bad key").exchange();
+
+        assertThat(result).hasStatus(400);
+        assertThat(result).bodyJson().extractingPath("$.errors[0].field").isEqualTo("Idempotency-Key");
+        verifyNoInteractions(quoteService);
     }
 
     @Test

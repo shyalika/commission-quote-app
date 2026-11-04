@@ -129,11 +129,12 @@ Malformed JSON and wrong types also return 400 with a clear message.
 - In the `local` profile, a filter maps the dev token to a Spring Security principal with authorities.
 - `POST /api/v1/quotes` requires `SCOPE_create:quotes` in every profile. This check is real, not stubbed.
 - No token or unknown token: 401. Valid token without the scope: 403.
-- Startup guard: the app refuses to start if the local auth stub is active together with the `prod` profile.
+- Startup guard: the app refuses to start under the `prod` profile, alone or together with `local`, until prod authentication is built. The local auth stub can therefore never run under `prod`. Once prod auth exists, the guard narrows to `local` together with `prod`.
+- With no profile active there is no token mechanism, so every `/api` call gets 401 (fail closed). Local runs set `SPRING_PROFILES_ACTIVE=local`.
 
-**Production (documented, config ready)**
-- `prod` profile configures Spring Security as an OAuth2 resource server: Auth0 issuer URI and audience from config, asymmetric signature (RS256) verified against cached JWKS.
-- A gateway API key filter exists, enabled only in `prod`.
+**Production (documented, not built)**
+- The `prod` profile would configure Spring Security as an OAuth2 resource server: Auth0 issuer URI and audience from config, asymmetric signature (RS256) verified against cached JWKS.
+- A gateway API key filter would be added, enabled only in `prod`.
 
 ## 8. Calling the vendor: timeouts, retries, idempotency
 

@@ -61,6 +61,16 @@ public class ApiExceptionHandler {
         return problem;
     }
 
+    @ExceptionHandler(InvalidHeaderException.class)
+    ProblemDetail invalidHeader(InvalidHeaderException e) {
+        // The value itself is never logged: it is exactly what failed the safety check.
+        log.info("Invalid header={}", e.header());
+        ProblemDetail problem = problem(HttpStatus.BAD_REQUEST, INVALID_REQUEST, false);
+        problem.setProperty("errors", List.of(
+                fieldError(e.header(), e.header() + " must be " + SafeHeaderValue.DESCRIPTION)));
+        return problem;
+    }
+
     @ExceptionHandler(HttpMessageNotReadableException.class)
     ProblemDetail unreadableBody(HttpMessageNotReadableException e) {
         ProblemDetail problem = problem(HttpStatus.BAD_REQUEST, INVALID_REQUEST, false);

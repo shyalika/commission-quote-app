@@ -23,11 +23,12 @@ public class QuoteService {
 
     /**
      * @param idempotencyKey the caller's key, or null; one is generated if absent
+     * @param subject the authenticated user, for the audit log
      */
-    public Quote createQuote(QuoteRequest request, String idempotencyKey, String correlationId) {
+    public Quote createQuote(QuoteRequest request, String idempotencyKey, String correlationId, String subject) {
         String key = idempotencyKey == null || idempotencyKey.isBlank() ? UUID.randomUUID().toString() : idempotencyKey;
         Quote quote = vendorQuoteClient.createQuote(request, key, correlationId);
-        log.info("Quote generated quoteId={}", quote.quoteId());
+        log.info("Quote generated quoteId={} subject={}", quote.quoteId(), subject);
         return quote;
     }
 }
