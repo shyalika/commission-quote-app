@@ -56,7 +56,7 @@ class AuthorizationTest {
 
     @Test
     void devStaffWithScopeReturns200() {
-        given(quoteService.createQuote(any(), any()))
+        given(quoteService.createQuote(any(), any(), any()))
                 .willReturn(new Quote("q-1", new BigDecimal("0.0075"), new BigDecimal("3750.00")));
 
         assertThat(postQuote().header("Authorization", "Bearer dev-staff")).hasStatusOk();

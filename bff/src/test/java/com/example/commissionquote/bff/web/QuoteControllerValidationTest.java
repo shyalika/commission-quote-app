@@ -37,7 +37,7 @@ class QuoteControllerValidationTest {
 
     @Test
     void validRequestReturnsTheServiceQuote() throws Exception {
-        given(quoteService.createQuote(any(), any()))
+        given(quoteService.createQuote(any(), any(), any()))
                 .willReturn(new Quote("q-1", new BigDecimal("0.0075"), new BigDecimal("3750.00")));
 
         var result = post(VALID_BODY).exchange();

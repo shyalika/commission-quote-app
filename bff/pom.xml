@@ -46,6 +46,12 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
+		<!-- Retries for vendor calls (design section 8) -->
+		<dependency>
+			<groupId>io.github.resilience4j</groupId>
+			<artifactId>resilience4j-retry</artifactId>
+			<version>2.3.0</version>
+		</dependency>
 		<!-- Auto-configured RestClient.Builder for the vendor client -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

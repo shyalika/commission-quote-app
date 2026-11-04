@@ -7,7 +7,8 @@ import com.example.commissionquote.bff.quote.QuoteRequest;
 public interface VendorQuoteClient {
 
     /**
+     * @param idempotencyKey sent on every attempt, so retries never create duplicate quotes
      * @throws VendorCallException if the vendor call fails
      */
-    Quote createQuote(QuoteRequest request, String correlationId);
+    Quote createQuote(QuoteRequest request, String idempotencyKey, String correlationId);
 }

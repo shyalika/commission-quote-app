@@ -77,15 +77,33 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(VendorCallException.class)
     ProblemDetail vendorCallFailed(VendorCallException e) {
-        switch (e.reason()) {
-            case UNAVAILABLE -> log.warn("Vendor unavailable vendorStatus={} cause={}", e.vendorStatus(),
-                    e.getCause() == null ? null : e.getCause().getMessage());
-            case UNAUTHORIZED -> log.error("Vendor rejected our api-key: configuration problem vendorStatus=401");
-            case BAD_REQUEST -> log.error("Vendor rejected a request our validation accepted: bug vendorStatus=400");
-            case REJECTED -> log.error("Vendor rejected the request vendorStatus={}", e.vendorStatus());
-        }
-        boolean retryable = e.reason() == VendorCallException.Reason.UNAVAILABLE;
-        return problem(HttpStatus.BAD_GATEWAY, VENDOR_FAILED, retryable);
+        return switch (e.reason()) {
+            case UNAVAILABLE -> {
+                log.warn("Vendor unavailable after retries vendorStatus={} cause={}", e.vendorStatus(),
+                        e.getCause() == null ? null : e.getCause().getMessage());
+                yield problem(HttpStatus.BAD_GATEWAY, VENDOR_FAILED, true);
+            }
+            case TIMEOUT -> {
+                log.warn("Vendor timed out after retries");
+                yield problem(HttpStatus.GATEWAY_TIMEOUT, VENDOR_FAILED, true);
+            }
+            case DEADLINE_EXCEEDED -> {
+                log.warn("Vendor call deadline exceeded");
+                yield problem(HttpStatus.GATEWAY_TIMEOUT, VENDOR_FAILED, true);
+            }
+            case UNAUTHORIZED -> {
+                log.error("Vendor rejected our api-key: configuration problem vendorStatus=401");
+                yield problem(HttpStatus.BAD_GATEWAY, VENDOR_FAILED, false);
+            }
+            case BAD_REQUEST -> {
+                log.error("Vendor rejected a request our validation accepted: bug vendorStatus=400");
+                yield problem(HttpStatus.BAD_GATEWAY, VENDOR_FAILED, false);
+            }
+            case REJECTED -> {
+                log.error("Vendor rejected the request vendorStatus={}", e.vendorStatus());
+                yield problem(HttpStatus.BAD_GATEWAY, VENDOR_FAILED, false);
+            }
+        };
     }
 
     @ExceptionHandler(Exception.class)

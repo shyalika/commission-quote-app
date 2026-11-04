@@ -7,8 +7,12 @@ package com.example.commissionquote.bff.vendor;
 public class VendorCallException extends RuntimeException {
 
     public enum Reason {
-        /** Vendor 5xx or connection error. */
+        /** Vendor 5xx or connection error. Retried. */
         UNAVAILABLE,
+        /** Connect or read timeout. Retried. */
+        TIMEOUT,
+        /** Not enough of the overall deadline left to start another attempt. */
+        DEADLINE_EXCEEDED,
         /** Vendor 401: our api-key is wrong. */
         UNAUTHORIZED,
         /** Vendor 400: our validation let something through that the vendor rejects. */
