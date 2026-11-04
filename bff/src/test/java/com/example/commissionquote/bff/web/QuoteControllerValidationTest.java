@@ -7,18 +7,23 @@ import static org.mockito.Mockito.verifyNoInteractions;
 
 import com.example.commissionquote.bff.quote.Quote;
 import com.example.commissionquote.bff.quote.QuoteService;
+import com.example.commissionquote.bff.security.SecurityConfig;
 import java.math.BigDecimal;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MockMvcTester.MockMvcRequestBuilder;
 
 @WebMvcTest(QuoteController.class)
+@Import(SecurityConfig.class)
+@ActiveProfiles("local")
 class QuoteControllerValidationTest {
 
     private static final String VALID_BODY =
@@ -84,13 +89,13 @@ class QuoteControllerValidationTest {
 
     @Test
     void getReturns405NotRetryable() {
-        var result = mvc.get().uri("/api/v1/quotes").exchange();
+        var result = mvc.get().uri("/api/v1/quotes").header("Authorization", "Bearer dev-staff").exchange();
 
         assertThat(result).hasStatus(405);
         assertThat(result).bodyJson().extractingPath("$.retryable").isEqualTo(false);
     }
 
     private MockMvcRequestBuilder post(String body) {
-        return mvc.post().uri("/api/v1/quotes").contentType(MediaType.APPLICATION_JSON).content(body);
+        return mvc.post().uri("/api/v1/quotes").header("Authorization", "Bearer dev-staff").contentType(MediaType.APPLICATION_JSON).content(body);
     }
 }

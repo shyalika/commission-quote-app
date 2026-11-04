@@ -17,12 +17,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 
 /** The whole BFF against a WireMock vendor. */
+@ActiveProfiles("local")
 @SpringBootTest(properties = "vendor.api-key=" + VendorIntegrationTest.API_KEY)
 @AutoConfigureMockMvc
 class VendorIntegrationTest {
@@ -75,7 +77,7 @@ class VendorIntegrationTest {
                 .withHeader("Content-Type", "application/json")
                 .withBody("{\"quoteId\":\"q\",\"commissionRate\":0.0075,\"totalCommission\":3750.00}")));
 
-        mvc.post().uri("/api/v1/quotes").contentType(MediaType.APPLICATION_JSON).content(BODY)
+        mvc.post().uri("/api/v1/quotes").header("Authorization", "Bearer dev-staff").contentType(MediaType.APPLICATION_JSON).content(BODY)
                 .header("X-Correlation-Id", "corr-abc").exchange();
 
         vendor.verify(postRequestedFor(urlEqualTo(VENDOR_PATH))
@@ -91,7 +93,7 @@ class VendorIntegrationTest {
 
         // 1e6 parses to BigDecimal 1E+6, which Jackson writes as 1E+6 unless the
         // shared write-bigdecimal-as-plain setting reaches the vendor client.
-        mvc.post().uri("/api/v1/quotes").contentType(MediaType.APPLICATION_JSON)
+        mvc.post().uri("/api/v1/quotes").header("Authorization", "Bearer dev-staff").contentType(MediaType.APPLICATION_JSON)
                 .content("{\"loanAmount\": 1e6, \"loanTermInMonths\": 360, \"riskBand\": \"MEDIUM\"}").exchange();
 
         vendor.verify(postRequestedFor(urlEqualTo(VENDOR_PATH))
@@ -128,6 +130,6 @@ class VendorIntegrationTest {
     }
 
     private MvcTestResult postQuote() {
-        return mvc.post().uri("/api/v1/quotes").contentType(MediaType.APPLICATION_JSON).content(BODY).exchange();
+        return mvc.post().uri("/api/v1/quotes").header("Authorization", "Bearer dev-staff").contentType(MediaType.APPLICATION_JSON).content(BODY).exchange();
     }
 }

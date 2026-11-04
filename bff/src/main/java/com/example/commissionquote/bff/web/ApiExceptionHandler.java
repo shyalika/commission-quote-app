@@ -11,6 +11,10 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -30,6 +34,21 @@ public class ApiExceptionHandler {
     private static final String INVALID_REQUEST = "Invalid request";
     private static final String VENDOR_FAILED = "Quote service unavailable";
     private static final String UNEXPECTED = "Unexpected error";
+    private static final String UNAUTHENTICATED = "Authentication required";
+    private static final String FORBIDDEN = "Access denied";
+
+    @ExceptionHandler(AuthenticationException.class)
+    ProblemDetail unauthenticated(AuthenticationException e) {
+        log.info("Rejected unauthenticated request reason={}", e.getClass().getSimpleName());
+        return problem(HttpStatus.UNAUTHORIZED, UNAUTHENTICATED, false);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    ProblemDetail accessDenied() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        log.warn("Access denied subject={}", authentication == null ? null : authentication.getName());
+        return problem(HttpStatus.FORBIDDEN, FORBIDDEN, false);
+    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     ProblemDetail validationFailed(MethodArgumentNotValidException e) {
