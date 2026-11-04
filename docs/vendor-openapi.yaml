@@ -1,0 +1,192 @@
+openapi: 3.0.3
+info:
+  title: Commission Quote API
+  version: 1.0.0
+  description: |
+    This is the contract the mock vendor implements and the BFF client is built
+    against. Items marked "(assumption)" are not part of the agreed contract and
+    would be confirmed with the vendor: the endpoint path, the rate being a
+    decimal fraction, and the error body. The `Idempotency-Key` header is a
+    proposed extension to the agreed contract.
+servers:
+  - url: http://localhost:8081
+    description: Local mock vendor
+security:
+  - apiKey: []
+
+paths:
+  /v1/commission-quotes:
+    post:
+      operationId: createCommissionQuote
+      summary: Create a commission quote
+      description: Endpoint path (assumption).
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/CorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommissionQuoteRequest'
+      responses:
+        '200':
+          description: |
+            Valid key and valid payload. The quote is returned.
+
+            A response can occasionally be slow, taking longer than a client's
+            read timeout.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommissionQuoteResponse'
+        '400':
+          description: Invalid payload.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: INVALID_REQUEST
+                message: The request payload is invalid.
+        '401':
+          description: Missing or invalid `api-key`. Both cases get the same response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: UNAUTHORIZED
+                message: Missing or invalid API key.
+        '409':
+          description: '`Idempotency-Key` reused with a different payload.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: IDEMPOTENCY_KEY_CONFLICT
+                message: Idempotency-Key was already used with a different payload.
+        '500':
+          description: Internal failure.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: INTERNAL_ERROR
+                message: An internal error occurred.
+        '503':
+          description: Temporarily unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: SERVICE_UNAVAILABLE
+                message: The service is temporarily unavailable.
+
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: api-key
+      description: |
+        API key issued by the vendor. A missing key and a wrong key get the
+        same 401 response.
+
+  parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      description: |
+        Proposed extension to the agreed contract.
+
+        A client chosen key that makes retries safe. The vendor stores each key
+        with its request payload and response for 1 hour:
+        - Same key and same payload: the stored response is returned and no new
+          quote is created.
+        - Same key and a different payload: 409.
+      schema:
+        type: string
+      example: 6f1c9a2e-3b4d-4e8f-9a7b-2c5d8e1f0a3b
+    CorrelationId:
+      name: X-Correlation-Id
+      in: header
+      required: false
+      description: Logged by the vendor for tracing.
+      schema:
+        type: string
+      example: 0d4e7b2a-91c3-4f6e-8a5d-3b2c1e9f7a6d
+
+  schemas:
+    CommissionQuoteRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - loanAmount
+        - loanTermInMonths
+        - riskBand
+      properties:
+        loanAmount:
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+          description: Loan amount in AUD. An exact decimal, not a binary floating point value.
+          example: 500000.00
+        loanTermInMonths:
+          type: integer
+          minimum: 1
+          description: Loan term in months.
+          example: 360
+        riskBand:
+          type: string
+          description: Risk band of the loan. Case sensitive.
+          enum:
+            - LOW
+            - MEDIUM
+            - HIGH
+          example: MEDIUM
+
+    CommissionQuoteResponse:
+      type: object
+      required:
+        - quoteId
+        - commissionRate
+        - totalCommission
+      properties:
+        quoteId:
+          type: string
+          description: Unique identifier of the quote.
+          example: b3f1c2e4-5a6b-4c7d-8e9f-0a1b2c3d4e5f
+        commissionRate:
+          type: number
+          description: |
+            Commission rate as a decimal fraction: 0.0075 means 0.75%
+            (assumption). An exact decimal, not a binary floating point value.
+          example: 0.0075
+        totalCommission:
+          type: number
+          description: |
+            Total commission in AUD: `loanAmount × commissionRate`, rounded to
+            2 decimal places with HALF_EVEN. An exact decimal, not a binary
+            floating point value.
+          example: 3750.00
+
+    Error:
+      type: object
+      description: Error body returned with every non 200 response (assumption).
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          description: Machine readable error code.
+          example: INVALID_REQUEST
+        message:
+          type: string
+          description: Human readable description of the error.
+          example: The request payload is invalid.
