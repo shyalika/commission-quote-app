@@ -58,6 +58,13 @@
 			<artifactId>spring-boot-starter-webmvc-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<!-- Checks responses against docs/vendor-openapi.yaml -->
+		<dependency>
+			<groupId>com.atlassian.oai</groupId>
+			<artifactId>swagger-request-validator-core</artifactId>
+			<version>2.44.9</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
