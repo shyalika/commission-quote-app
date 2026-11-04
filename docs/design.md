@@ -208,7 +208,7 @@ Plain TypeScript with Vite, no UI framework. It is a single form, and the weight
 - Vendor client against WireMock: success; api-key header sent; 503 then success; repeated 503 gives 502; slow response times out and the retry carries the same `Idempotency-Key`; vendor 401 maps to 502 with `retryable: false` and no detail leaked.
 - Startup guard test.
 
-**web (Vitest with jsdom and DOM Testing Library):** invalid numbers show field messages and block submit (empty, negative, non numeric, too many decimals, term out of range or not whole); valid input submits once. Stretch: loading state; error with Try again only when retryable.
+**web (Vitest with jsdom and DOM Testing Library):** invalid numbers show field messages and block submit (empty, negative, non numeric, too many decimals, term out of range or not whole); valid input submits once; the button is disabled and a loading state shows while the request is pending; a successful quote is displayed; an error shows the generic message and reference, with Try again only when retryable, and Try again resends with the same Idempotency-Key.
 
 ## 13. Running
 
@@ -237,8 +237,8 @@ Browser ──JWT──▶ WAF ──▶ AWS API Gateway (HTTP API) ──VPC li
 
 ## 15. Scope and next steps
 
-**Built:** vendor OpenAPI contract (first), core flow, UI validation with tests, auth stub with real scope checks, timeouts, retries with backoff, idempotency, tests for these.
+**Built:** vendor OpenAPI contract (first), core flow, UI validation, loading and error states with tests, auth stub with real scope checks, timeouts, retries with backoff, idempotency, tests for these.
 
-**Built if time allows:** vendor response validation, circuit breaker, UI tests for loading and error states, Docker Compose.
+**Built if time allows:** vendor response validation, circuit breaker, Docker Compose.
 
 **Next steps:** extract the Quote Service; real Auth0 integration; token handler BFF; secrets manager; contract tests against the real vendor; connect traces, metrics and logs to Datadog with dashboards and alerts; rate limiting.

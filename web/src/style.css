@@ -1,16 +1,148 @@
 :root {
-  font-family: system-ui, sans-serif;
+  --text: #1a1a1a;
+  --muted: #555;
+  --border: #8a8a8a;
+  --accent: #0b5cad;
+  --error: #b00020;
+  --surface: #f5f7fa;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
   line-height: 1.5;
-  color: #1a1a1a;
+  color: var(--text);
   background: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
 }
 
+/* Mobile first: full width with a 16px gutter, capped on larger screens. */
 main {
-  max-width: 40rem;
+  max-width: 36rem;
   margin: 0 auto;
+  padding: 1.5rem 1rem;
+}
+
+h1 {
+  font-size: 1.5rem;
+  margin: 0 0 1.25rem;
+}
+
+form {
+  display: grid;
+  gap: 1rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.25rem;
+}
+
+label {
+  font-weight: 600;
+}
+
+input,
+select,
+button {
+  font: inherit;
+  min-height: 2.75rem;
+}
+
+input,
+select {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: #ffffff;
+  color: var(--text);
+}
+
+/* Invalid fields get a thicker red border as well as the message, so colour isn't the only cue. */
+[aria-invalid='true'] {
+  border: 2px solid var(--error);
+}
+
+.field-error {
+  margin: 0;
+  color: var(--error);
+}
+
+.dev-only {
+  padding: 0.75rem;
+  border: 1px dashed var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+}
+
+button {
+  padding: 0.5rem 1.25rem;
+  border: 0;
+  border-radius: 4px;
+  background: var(--accent);
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+  justify-self: start;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.status {
+  margin-top: 1.25rem;
+}
+
+.result {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.5rem 1rem;
+  margin: 0;
   padding: 1rem;
+  border-radius: 4px;
+  background: var(--surface);
+}
+
+.result dt {
+  color: var(--muted);
+}
+
+.result dd {
+  margin: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.error {
+  margin-top: 1.25rem;
+  padding: 1rem;
+  border-left: 4px solid var(--error);
+  background: #fdf2f4;
+}
+
+.error p {
+  margin: 0 0 0.5rem;
+}
+
+.error-reference {
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+/* Narrow screens: result labels above values. */
+@media (max-width: 24rem) {
+  .result {
+    grid-template-columns: 1fr;
+  }
 }
