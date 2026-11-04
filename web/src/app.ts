@@ -3,8 +3,9 @@
 
 import type { CreateQuote } from './api';
 import {
+  clearError,
+  clearResult,
   focusFirstInvalid,
-  hideTryAgain,
   renderForm,
   showError,
   showFieldErrors,
@@ -73,9 +74,12 @@ export function mountQuoteApp(root: HTMLElement, { createQuote, showDevSelector 
   });
 
   // Any edit, including switching the dev user, makes the next submit a new submission.
+  // The displayed quote or error no longer matches the form, so both are cleared
+  // (clearing the error also hides Try again).
   const startNewSubmission = () => {
     idempotencyKey = null;
-    hideTryAgain(view);
+    clearResult(view);
+    clearError(view);
   };
   view.form.addEventListener('input', startNewSubmission);
   view.form.addEventListener('change', startNewSubmission);

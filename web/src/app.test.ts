@@ -5,6 +5,7 @@ import {
   getByLabelText,
   getByRole,
   queryByRole,
+  queryByText,
   waitFor,
 } from '@testing-library/dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -115,6 +116,28 @@ describe('request outcome', () => {
     expect(await findByText(document.body, '0.75%')).toBeTruthy();
     expect(await findByText(document.body, '$3,750.00')).toBeTruthy();
     expect(getByRole(document.body, 'button', { name: 'Generate quote' })).toHaveProperty('disabled', false);
+  });
+
+  it('the displayed quote is cleared when a field changes', async () => {
+    fillForm();
+    submit();
+    await findByText(document.body, 'q-1');
+
+    fireEvent.input(getByLabelText(document.body, TERM), { target: { value: '240' } });
+
+    expect(queryByText(document.body, 'q-1')).toBeNull();
+  });
+
+  it('the error message is cleared when a field changes', async () => {
+    createQuote.mockResolvedValue({ kind: 'error', message: MESSAGE, retryable: true, correlationId: 'ref-123' });
+    fillForm();
+    submit();
+    await findByText(document.body, MESSAGE);
+
+    fireEvent.input(getByLabelText(document.body, TERM), { target: { value: '240' } });
+
+    expect(queryByRole(document.body, 'alert')).toBeNull();
+    expect(queryByRole(document.body, 'button', { name: 'Try again' })).toBeNull();
   });
 
   it.each([true, false])(

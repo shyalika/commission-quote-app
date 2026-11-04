@@ -115,7 +115,7 @@ export function focusFirstInvalid(view: QuoteView, errors: FieldErrors): void {
 export function showLoading(view: QuoteView): void {
   view.submit.disabled = true;
   view.tryAgain.disabled = true;
-  hideError(view);
+  clearError(view);
   view.status.textContent = 'Generating quote…';
 }
 
@@ -125,7 +125,7 @@ export function showStillWorking(view: QuoteView): void {
 
 export function showResult(view: QuoteView, quote: Quote): void {
   enableActions(view);
-  hideError(view);
+  clearError(view);
   const list = document.createElement('dl');
   list.className = 'result';
   addRow(list, 'Quote ID', quote.quoteId);
@@ -147,17 +147,14 @@ export function showError(
   view.error.hidden = false;
 }
 
-export function hideTryAgain(view: QuoteView): void {
-  view.tryAgain.hidden = true;
+/** Hides the request error, including its reference and Try again. */
+export function clearError(view: QuoteView): void {
+  view.error.hidden = true;
 }
 
 /** Removes a displayed quote; a loading message, if any, stays. */
 export function clearResult(view: QuoteView): void {
   view.status.querySelector('.result')?.remove();
-}
-
-function hideError(view: QuoteView): void {
-  view.error.hidden = true;
 }
 
 function enableActions(view: QuoteView): void {
